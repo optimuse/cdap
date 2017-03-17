@@ -543,10 +543,10 @@ features:
       description: A pipeline allows you to ingest, egress, and process data either to, from, or within Hadoop.
       actionbtn0: Create
     Artifact:
-      label: Driver
-      description: A driver is a JAR file that contains third-party code to talk to external systems, such as MySQL, Oracle, and PostgreSQL.
+      label: Library
+      description: A library is a JAR file that can contains reusable third-party code (e.g. JDBC drivers, non-CDAP programs, etc.).
       actionbtn0: Upload
-      modalheadertitle: Add Driver
+      modalheadertitle: Add Library
     Plugins:
       label: Plugin
       description: A plugin is an easy way to extend the functionality of an application.
@@ -593,29 +593,29 @@ features:
       success: You have successfully deployed the application "{appName}".
       callToAction: View Application Details
     ArtifactUpload:
-      headerlabel: Add Third party Driver
-      footertitle: Add Driver
+      headerlabel: Add Library
+      footertitle: Add Library
       Step1:
-        description: Upload your Driver
-        shorttitle: Upload Driver
+        description: Upload your Library
+        shorttitle: Upload Library
         title: Upload JAR
-        uploadHelperText: Upload the third party driver that was downloaded from the previous step
+        uploadHelperText: Upload the library that was downloaded from the previous step
         filePathLabel: Choose file
       Step2:
-        description: Configure the settings for your driver
-        shorttitle: Driver Configuration
-        title: Configure Driver
+        description: Configure the settings for your library
+        shorttitle: Library Configuration
+        title: Configure Library
         parentArtifactLabel: Parent Artifact
         nameLabel: Name
-        namePlaceholder: Driver Name
+        namePlaceholder: Library Name
         descriptionLabel: Description
-        decriptionPlaceholder: Driver Description
+        decriptionPlaceholder: Library Description
         typeLabel: Type
-        typePlaceholder: Driver Type
+        typePlaceholder: Library Type
         classnameLabel: Class Name
-        classnamePlaceholder: Driver Class Name
-      success: You have successfully uploaded the driver "{artifactName}".
-      subtitle: You can now create a pipeline to extract data from Database using the driver.
+        classnamePlaceholder: Library Class Name
+      success: You have successfully uploaded the library "{artifactName}".
+      subtitle: You can now create a pipeline to extract data from Database using the library.
       callToAction: Create a Pipeline
     Done: Done
     GoToHomePage: Go to Home Page
