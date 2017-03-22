@@ -29,6 +29,7 @@ import FillNullOrEmpty from 'components/DataPrep/Directives/FillNullOrEmpty';
 import DropColumn from 'components/DataPrep/Directives/DropColumn';
 import FilterDirective from 'components/DataPrep/Directives/Filter';
 import CopyColumn from 'components/DataPrep/Directives/CopyColumn';
+import KeepColumn from 'components/DataPrep/Directives/KeepColumn';
 
 require('./ColumnActionsDropdown.scss');
 
@@ -55,6 +56,10 @@ export default class ColumnActionsDropdown extends Component {
       {
         id: shortid.generate(),
         tag: DropColumn
+      },
+      {
+        id: shortid.generate(),
+        tag: KeepColumn
       },
       {
         id: shortid.generate(),
