@@ -115,7 +115,6 @@ public class UpgradeTool {
   private final TransactionService txService;
   private final ZKClientService zkClientService;
   private final DatasetFramework dsFramework;
-  private final StreamStateStoreUpgrader streamStateStoreUpgrader;
   private final DatasetUpgrader dsUpgrade;
   private final QueueAdmin queueAdmin;
   private final AuthorizationEnforcementService authorizationService;
@@ -164,7 +163,6 @@ public class UpgradeTool {
     this.txService = injector.getInstance(TransactionService.class);
     this.zkClientService = injector.getInstance(ZKClientService.class);
     this.dsFramework = injector.getInstance(DatasetFramework.class);
-    this.streamStateStoreUpgrader = injector.getInstance(StreamStateStoreUpgrader.class);
     this.dsUpgrade = injector.getInstance(DatasetUpgrader.class);
     this.queueAdmin = injector.getInstance(QueueAdmin.class);
     this.authorizationService = injector.getInstance(AuthorizationEnforcementService.class);
@@ -415,9 +413,6 @@ public class UpgradeTool {
 
     LOG.info("Upgrading AppMetadatastore...");
     store.upgradeAppVersion();
-
-    LOG.info("Upgrading stream state store table...");
-    streamStateStoreUpgrader.upgrade();
 
     LOG.info("Upgrading stream size schedule store...");
     datasetBasedStreamSizeScheduleStore.upgrade();
