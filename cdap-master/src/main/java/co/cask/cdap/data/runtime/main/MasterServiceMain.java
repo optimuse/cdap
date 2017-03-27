@@ -107,6 +107,7 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.twill.api.Configs;
 import org.apache.twill.api.ElectionHandler;
 import org.apache.twill.api.TwillApplication;
 import org.apache.twill.api.TwillController;
@@ -903,7 +904,7 @@ public class MasterServiceMain extends DaemonMain {
           TwillPreparer preparer = twillRunner.prepare(masterTwillApp);
 
           if (!cConf.getBoolean(Constants.COLLECT_CONTAINER_LOGS)) {
-            preparer.addJVMOptions("-Dtwill.disable.kafka=true");
+            preparer.withConfiguration(Collections.singletonMap(Configs.Keys.LOG_COLLECTION_ENABLED, "false"));
           }
 
           // Add logback xml

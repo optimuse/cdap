@@ -83,7 +83,7 @@ public final class YarnTwillController extends AbstractTwillController implement
    */
   YarnTwillController(String appName, RunId runId, ZKClient zkClient,
                       final ApplicationMasterLiveNodeData amLiveNodeData, final YarnAppClient yarnAppClient) {
-    super(runId, zkClient, Collections.<LogHandler>emptyList());
+    super(appName, runId, zkClient, amLiveNodeData.getKafkaZKConnect() != null, Collections.<LogHandler>emptyList());
     this.appName = appName;
     this.amLiveNodeData = amLiveNodeData;
     this.startUp = new Callable<ProcessController<YarnApplicationReport>>() {
@@ -97,10 +97,10 @@ public final class YarnTwillController extends AbstractTwillController implement
     this.startTimeoutUnit = TimeUnit.SECONDS;
   }
 
-  YarnTwillController(String appName, RunId runId, ZKClient zkClient, Iterable<LogHandler> logHandlers,
-                      Callable<ProcessController<YarnApplicationReport>> startUp,
+  YarnTwillController(String appName, RunId runId, ZKClient zkClient, boolean logCollectionEnabled,
+                      Iterable<LogHandler> logHandlers, Callable<ProcessController<YarnApplicationReport>> startUp,
                       long startTimeout, TimeUnit startTimeoutUnit) {
-    super(runId, zkClient, logHandlers);
+    super(appName, runId, zkClient, logCollectionEnabled, logHandlers);
     this.appName = appName;
     this.startUp = startUp;
     this.startTimeout = startTimeout;

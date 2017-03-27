@@ -61,6 +61,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tephra.TxConstants;
+import org.apache.twill.api.Configs;
 import org.apache.twill.api.EventHandler;
 import org.apache.twill.api.TwillApplication;
 import org.apache.twill.api.TwillController;
@@ -276,7 +277,7 @@ public abstract class AbstractDistributedProgramRunner implements ProgramRunner,
 
               String logLevelConf = cConf.get(Constants.COLLECT_APP_CONTAINER_LOG_LEVEL).toUpperCase();
               if ("OFF".equals(logLevelConf)) {
-                twillPreparer.addJVMOptions("-Dtwill.disable.kafka=true");
+                twillPreparer.withConfiguration(Collections.singletonMap(Configs.Keys.LOG_COLLECTION_ENABLED, "false"));
               } else {
                 LogEntry.Level logLevel = LogEntry.Level.ERROR;
                 if ("ALL".equals(logLevelConf)) {

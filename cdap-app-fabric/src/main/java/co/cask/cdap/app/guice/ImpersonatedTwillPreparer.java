@@ -47,6 +47,12 @@ final class ImpersonatedTwillPreparer implements TwillPreparer {
   }
 
   @Override
+  public TwillPreparer withConfiguration(Map<String, String> map) {
+    delegate.withConfiguration(map);
+    return this;
+  }
+
+  @Override
   public TwillPreparer addLogHandler(LogHandler handler) {
     delegate.addLogHandler(handler);
     return this;
