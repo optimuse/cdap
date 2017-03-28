@@ -34,6 +34,8 @@ public final class Constants {
                                                                   Schema.of(Schema.Type.NULL))),
     Schema.Field.of(ErrorDataset.INVALIDENTRY, Schema.of(Schema.Type.STRING))
   );
+  public static final String MDC_STAGE_KEY = "pipeline.stage";
+  public static final String PROCESS_TIME = "process.time.ms";
 
   private Constants() {
     throw new AssertionError("Suppress default constructor for noninstantiability");

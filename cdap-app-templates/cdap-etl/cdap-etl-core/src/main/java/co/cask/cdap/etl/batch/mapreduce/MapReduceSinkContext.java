@@ -23,7 +23,9 @@ import co.cask.cdap.api.metrics.Metrics;
 import co.cask.cdap.etl.api.LookupProvider;
 import co.cask.cdap.etl.api.batch.BatchSinkContext;
 import co.cask.cdap.etl.common.ExternalDatasets;
-import co.cask.cdap.etl.log.LogContext;
+import co.cask.cdap.etl.common.plugin.Caller;
+import co.cask.cdap.etl.common.plugin.ClassLoaderCaller;
+import co.cask.cdap.etl.common.plugin.NoStageLoggingCaller;
 import co.cask.cdap.etl.planner.StageInfo;
 
 import java.util.Collections;
@@ -39,11 +41,13 @@ import java.util.concurrent.Callable;
  */
 public class MapReduceSinkContext extends MapReduceBatchContext implements BatchSinkContext {
   private final Set<String> outputNames;
+  private final Caller caller;
 
   public MapReduceSinkContext(MapReduceContext context, Metrics metrics, LookupProvider lookup,
                               Map<String, String> runtimeArgs, StageInfo stageInfo) {
     super(context, metrics, lookup, runtimeArgs, stageInfo);
     this.outputNames = new HashSet<>();
+    this.caller = ClassLoaderCaller.wrap(NoStageLoggingCaller.wrap(Caller.DEFAULT), getClass().getClassLoader());
   }
 
   @Override
@@ -53,7 +57,7 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final String datasetName, final Map<String, String> arguments) {
-    String alias = LogContext.runWithoutLoggingUnchecked(new Callable<String>() {
+    String alias = caller.callUnchecked(new Callable<String>() {
       @Override
       public String call() throws Exception {
         Output output = suffixOutput(Output.ofDataset(datasetName, arguments));
@@ -66,7 +70,7 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final String outputName, final OutputFormatProvider outputFormatProvider) {
-    String alias = LogContext.runWithoutLoggingUnchecked(new Callable<String>() {
+    String alias = caller.callUnchecked(new Callable<String>() {
       @Override
       public String call() throws Exception {
         Output output = suffixOutput(Output.of(outputName, outputFormatProvider));
@@ -79,7 +83,7 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final Output output) {
-    Output trackableOutput = LogContext.runWithoutLoggingUnchecked(new Callable<Output>() {
+    Output trackableOutput = caller.callUnchecked(new Callable<Output>() {
       @Override
       public Output call() throws Exception {
         Output trackableOutput = ExternalDatasets.makeTrackable(mrContext.getAdmin(), suffixOutput(output));
