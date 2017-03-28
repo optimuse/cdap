@@ -27,6 +27,7 @@ import co.cask.cdap.api.common.Scope;
 import co.cask.cdap.api.dataset.DatasetManagementException;
 import co.cask.cdap.api.dataset.DatasetProperties;
 import co.cask.cdap.api.metrics.MetricsCollectionService;
+import co.cask.cdap.api.retry.RetryableException;
 import co.cask.cdap.api.schedule.SchedulableProgramType;
 import co.cask.cdap.api.security.store.SecureStore;
 import co.cask.cdap.api.security.store.SecureStoreManager;
@@ -53,6 +54,8 @@ import co.cask.cdap.common.conf.Constants;
 import co.cask.cdap.common.lang.InstantiatorFactory;
 import co.cask.cdap.common.logging.LoggingContext;
 import co.cask.cdap.common.logging.LoggingContextAccessor;
+import co.cask.cdap.common.service.Retries;
+import co.cask.cdap.common.service.RetryStrategies;
 import co.cask.cdap.data2.dataset2.DatasetFramework;
 import co.cask.cdap.data2.transaction.Transactions;
 import co.cask.cdap.internal.app.runtime.BasicArguments;
@@ -181,7 +184,6 @@ final class WorkflowDriver extends AbstractExecutionThreadService {
     this.secureStore = secureStore;
     this.secureStoreManager = secureStoreManager;
     this.messagingService = messagingService;
-
   }
 
   @Override
@@ -505,13 +507,24 @@ final class WorkflowDriver extends AbstractExecutionThreadService {
   }
 
   private void createLocalDatasets() throws IOException, DatasetManagementException {
-    for (Map.Entry<String, String> entry : datasetFramework.getDatasetNameMapping().entrySet()) {
-      String localInstanceName = entry.getValue();
-      DatasetId instanceId = new DatasetId(workflowRunId.getNamespace(), localInstanceName);
-      DatasetCreationSpec instanceSpec = workflowSpec.getLocalDatasetSpecs().get(entry.getKey());
+    for (final Map.Entry<String, String> entry : datasetFramework.getDatasetNameMapping().entrySet()) {
+      final String localInstanceName = entry.getValue();
+      final DatasetId instanceId = new DatasetId(workflowRunId.getNamespace(), localInstanceName);
+      final DatasetCreationSpec instanceSpec = workflowSpec.getLocalDatasetSpecs().get(entry.getKey());
       LOG.debug("Adding Workflow local dataset instance: {}", localInstanceName);
-      datasetFramework.addInstance(instanceSpec.getTypeName(), instanceId,
-                                   addLocalDatasetProperty(instanceSpec.getProperties()));
+
+      Retries.callWithRetries(new Retries.Callable<Void, IOException>() {
+        @Override
+        public Void call() throws IOException {
+          try {
+            datasetFramework.addInstance(instanceSpec.getTypeName(), instanceId,
+                                         addLocalDatasetProperty(instanceSpec.getProperties()));
+          } catch (DatasetManagementException e) {
+            throw new RetryableException(e);
+          }
+          return null;
+        }
+      }, RetryStrategies.fixDelay(Constants.Retry.RUN_RECORD_UPDATE_RETRY_DELAY_SECS, TimeUnit.SECONDS));
     }
   }
 
