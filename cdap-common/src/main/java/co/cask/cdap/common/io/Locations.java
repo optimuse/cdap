@@ -19,7 +19,6 @@ import co.cask.cdap.common.lang.FunctionWithException;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterators;
 import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.OutputSupplier;
@@ -31,7 +30,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.twill.filesystem.FileContextLocationFactory;
-import org.apache.twill.filesystem.HDFSLocationFactory;
 import org.apache.twill.filesystem.LocalLocationFactory;
 import org.apache.twill.filesystem.Location;
 import org.apache.twill.filesystem.LocationFactory;
@@ -132,9 +130,7 @@ public final class Locations {
             LocationFactory locationFactory = location.getLocationFactory();
 
             FileSystem fs = null;
-            if (locationFactory instanceof HDFSLocationFactory) {
-              fs = ((HDFSLocationFactory) locationFactory).getFileSystem();
-            } else if (locationFactory instanceof FileContextLocationFactory) {
+            if (locationFactory instanceof FileContextLocationFactory) {
               final FileContextLocationFactory lf = (FileContextLocationFactory) locationFactory;
               fs = lf.getFileContext().getUgi().doAs(new PrivilegedExceptionAction<FileSystem>() {
                 @Override
@@ -237,10 +233,6 @@ public final class Locations {
    */
   private static LocationStatus getLocationStatus(Location location) throws IOException {
     LocationFactory lf = location.getLocationFactory();
-    if (lf instanceof HDFSLocationFactory) {
-      return FILE_STATUS_TO_LOCATION_STATUS.apply(
-        ((HDFSLocationFactory) lf).getFileSystem().getFileLinkStatus(new Path(location.toURI())));
-    }
     if (lf instanceof FileContextLocationFactory) {
       return FILE_STATUS_TO_LOCATION_STATUS.apply(
         ((FileContextLocationFactory) lf).getFileContext().getFileLinkStatus(new Path(location.toURI())));
@@ -254,11 +246,6 @@ public final class Locations {
    */
   private static RemoteIterator<LocationStatus> listLocationStatus(Location location) throws IOException {
     LocationFactory lf = location.getLocationFactory();
-    if (lf instanceof HDFSLocationFactory) {
-      FileStatus[] fileStatuses = ((HDFSLocationFactory) lf).getFileSystem()
-        .listStatus(new Path(location.toURI()));
-      return transform(asRemoteIterator(Iterators.forArray(fileStatuses)), FILE_STATUS_TO_LOCATION_STATUS);
-    }
     if (lf instanceof FileContextLocationFactory) {
       FileContext fc = ((FileContextLocationFactory) lf).getFileContext();
       return transform(fc.listStatus(new Path(location.toURI())), FILE_STATUS_TO_LOCATION_STATUS);
