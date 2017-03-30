@@ -155,6 +155,8 @@ Each individual property of the plugin is represented by a configuration, compos
 - :ref:`widget-attributes: <plugins-presentation-widgets>` A map of attributes that the
   widget type requires to be defined in order to render the property in the CDAP UI. The
   attributes required depend on the widget type used.
+- :ref:`hide-property: <plugins-presentation-hide-property>` An optional specification; if
+  included, the property is hidden in the CDAP UI.
 - :ref:`plugin-function: <plugins-presentation-plugin-function>`
   An optional map of plugin method and its widget attributes that can be applied to a
   particular plugin property.
@@ -211,16 +213,6 @@ different properties are defined; three use a *textbox* widget, while one uses a
     ]
   }
 
-.. _plugins-presentation-hide-property:
-
-Hiding Properties
------------------
-Beginning with version 1.4 of the specification, any field of the plugin can be specified
-with a ``hide-property``. This property takes in the highest precedence when determining
-whether to show or hide a specific property. This can be used to hide all those properties
-of the plugin that might not be of interest to a plugin user.
-
-
 .. _plugins-presentation-widgets:
 
 Plugin Widgets
@@ -229,8 +221,6 @@ A widget in the CDAP UI represents a component that will be rendered and used to
 value of a property of a plugin. These are the different widgets |---| their type, their
 attributes (if any), their output data type, a description, sample JSON |---| that we support in
 CDAP pipelines as of version |version|.
-
-**Note:** All widget accept a ``label`` as an attribute, in addition to those described below.
 
 .. highlight:: json-ellipsis
 
@@ -562,6 +552,25 @@ CDAP pipelines as of version |version|.
           }
      
 
+.. _plugins-presentation-hide-property:
+
+Hiding Properties
+-----------------
+Beginning with version 1.4 of the specification, any field of the plugin can be specified
+with a ``hide-property``. This property determines whether to show or hide a specific
+property. This can be used to hide properties of a plugin that might not be of interest to
+a plugin user, though they may still require definition.
+
+For example, this would hide the ``path`` property of a plugin::
+
+  {
+    "name": "path",
+    "label": "Path",
+    "widget-type": "textbox",
+    "hide-property": true
+  }
+        
+
 .. _plugins-presentation-plugin-function:
 
 Plugin Function
@@ -775,8 +784,8 @@ For example::
         "properties": [
           {
             "widget-type": "dataset-selector",
-            "label": "Table Name",
-            "name": "name"
+            "label": "Dataset Name",
+            "name": "datasetName"
           }
         ]
       }
@@ -802,12 +811,12 @@ For example::
     ],
     "jump-config": {
       "datasets": [{
-        "ref-property-name": "name"
+        "ref-property-name": "datasetName"
       }]
     }
   }  
 
-In this example, the `name` field of the `dataset-selector` will have a "jump" link added in the CDAP UI.
+In this example, the ``datasetName`` field of the ``dataset-selector`` will have a "jump" link added in the CDAP UI.
 
 Example Widget JSON
 ===================
