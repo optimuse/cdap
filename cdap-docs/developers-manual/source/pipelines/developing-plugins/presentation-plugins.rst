@@ -211,6 +211,15 @@ different properties are defined; three use a *textbox* widget, while one uses a
     ]
   }
 
+.. _plugins-presentation-hide-property:
+
+Hiding Properties
+-----------------
+Beginning with version 1.4 of the specification, any field of the plugin can be specified
+with a ``hide-property``. This property takes in the highest precedence when determining
+whether to show or hide a specific property. This can be used to hide all those properties
+of the plugin that might not be of interest to a plugin user.
+
 
 .. _plugins-presentation-widgets:
 
@@ -900,6 +909,5 @@ These changes describe changes added with each version of the specification.
 - **1.3:** Added :ref:`jump-config <plugins-presentation-jumps>` to specify which property
   names are to be connected in the CDAP UI to a detailed view of a stream or dataset.
 
-- **1.4:** Added ``hide-property`` for any field. This property takes in the highest
-  precedence when determining whether to show or hide a specific property. This can be used
-  to hide all those properties of the plugin that might not be of interest to a plugin user.
+- **1.4:** Added :ref:`hide-property <plugins-presentation-hide-property>`` for any field
+  of a plugin.
