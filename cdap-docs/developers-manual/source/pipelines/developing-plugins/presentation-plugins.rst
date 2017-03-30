@@ -909,5 +909,5 @@ These changes describe changes added with each version of the specification.
 - **1.3:** Added :ref:`jump-config <plugins-presentation-jumps>` to specify which property
   names are to be connected in the CDAP UI to a detailed view of a stream or dataset.
 
-- **1.4:** Added :ref:`hide-property <plugins-presentation-hide-property>`` for any field
+- **1.4:** Added :ref:`hide-property <plugins-presentation-hide-property>` for any field
   of a plugin.
