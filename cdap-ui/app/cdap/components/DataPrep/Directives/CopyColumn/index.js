@@ -50,7 +50,6 @@ export default class CopyColumnDirective extends Component {
 
   handleInputChange(e) {
     this.setState({input: e.target.value});
-    this.columnAlreadyExists(e.target.value);
   }
 
   handleKeyPress(e) {
