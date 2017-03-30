@@ -30,7 +30,9 @@
     <div class="widget-group-container">
       <h4>{{::group.display}}</h4>
       <div ng-repeat="field in group.fields">
-        <div ng-if="field.name !== HydratorPlusPlusNodeConfigCtrl.state.groupsConfig.outputSchema.schemaProperty">
+        <div
+          ng-if="field.name !== HydratorPlusPlusNodeConfigCtrl.state.groupsConfig.outputSchema.schemaProperty && !field['hide-property']"
+        >
 
           <div class="form-group">
             <label class="control-label">
