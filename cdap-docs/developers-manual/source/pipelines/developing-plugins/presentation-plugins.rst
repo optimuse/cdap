@@ -39,8 +39,8 @@ The widget JSON is composed of:
 
 - a map of :ref:`metadata <plugins-presentation-metadata>`
 - a list of property :ref:`configuration groups <plugins-presentation-configuration-groups>`
-- a map of :ref:`inputs  (input properties) <plugins-presentation-inputs>`
-- a list of :ref:`outputs (output properties) <plugins-presentation-outputs>`
+- a map of :ref:`inputs <plugins-presentation-inputs>`
+- a list of :ref:`outputs <plugins-presentation-outputs>`
 - a map of :ref:`stream or dataset jumps <plugins-presentation-jumps>`
 
 .. highlight:: json-ellipsis
