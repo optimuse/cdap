@@ -21,6 +21,12 @@ include use of additional widgets that are not listed here. We recommend only us
 list of plugins shown here, as these other widgets are internal to CDAP and may not be
 supported in a future release.
 
+This document describes version |plugins-spec-version| of the plugin specification.
+Changes to the specification are described in the  
+:ref:`plugins-presentation-specification-changes` and should be checked if you are using a 
+version of the specification earlier than the current.
+
+
 .. _plugins-presentation-widget-json:
 
 Plugin Widget JSON
@@ -33,7 +39,9 @@ The widget JSON is composed of:
 
 - a map of :ref:`metadata <plugins-presentation-metadata>`
 - a list of property :ref:`configuration groups <plugins-presentation-configuration-groups>`
+- a map of :ref:`inputs  (input properties) <plugins-presentation-inputs>`
 - a list of :ref:`outputs (output properties) <plugins-presentation-outputs>`
+- a map of :ref:`stream or dataset jumps <plugins-presentation-jumps>`
 
 .. highlight:: json-ellipsis
 
@@ -58,11 +66,17 @@ Each configuration group consists of a list of the :ref:`individual properties
       },
       ...
     ],
+    "inputs": {
+      ...
+    },
     "outputs": [
       {"output-property-1"},
       {"output-property-2"},
       ...
-    ]
+    ],
+    "jump-config": {
+      ...
+    }
   }
 
 .. _plugins-presentation-metadata:
@@ -82,10 +96,6 @@ Current version: |plugins-spec-version|. For example:
     },
     ...
   }
-
-A list of changes for the different versions of the metadata can be found in the list of
-:ref:`plugins-presentation-specification-changes`.
-
 
 .. _plugins-presentation-configuration-groups:
 
@@ -210,6 +220,8 @@ A widget in the CDAP UI represents a component that will be rendered and used to
 value of a property of a plugin. These are the different widgets |---| their type, their
 attributes (if any), their output data type, a description, sample JSON |---| that we support in
 CDAP pipelines as of version |version|.
+
+**Note:** All widget accept a ``label`` as an attribute, in addition to those described below.
 
 .. highlight:: json-ellipsis
 
@@ -617,6 +629,38 @@ plugin-function, could be represented by::
     ]
   }
 
+
+.. _plugins-presentation-inputs:
+
+Inputs
+------
+Beginning with version 1.2 of the specification, a plugin can accept multiple input
+schemas and from them generate a single output schema. Using the field ``multipleInputs``
+and setting it to true tells the CDAP UI to show the multiple input schemas coming into a
+specific plugin, instead of assuming that all of the schemas coming in from different
+plugins are identical. 
+
+This is an optional object, and if it is not present, it is assumed that all of the
+schemas coming in from any connected plugins are identical. Currently, only one value
+(``multipleInputs``) is accepted.
+
+For example::
+
+  {
+    "metadata": {
+      ...
+    },
+    "configuration-groups": [
+      ...
+    ],
+    "inputs": {
+      "multipleInputs": true
+    },
+    "outputs": [
+      ...
+    ]
+  }
+
 .. _plugins-presentation-outputs:
 
 Outputs
@@ -697,6 +741,64 @@ An example of this is from the :github-hydrator-plugins:`KeyValueTable Batch Sou
 
 Widget types for output properties are limited to ensure that the schema that is
 propagated across different plugins in the CDAP UI is consistent.
+
+.. _plugins-presentation-jumps:
+
+Stream and Dataset Jumps
+------------------------
+Beginning with version 1.3 of the specification, a plugin can be specified (using
+``jump-config``) with a map of stream and dataset "jumps". They specify which plugin
+property names are either a stream or dataset that can be used, in the CDAP UI, to
+directly jump to a detailed view of the stream or dataset.
+
+This is an optional object, and if it is not present, no jump links will be created in the
+CDAP UI. Jump links are not active in the CDAP Studio.
+
+For example::
+
+  {
+    "metadata": {
+      ...
+    },
+    "configuration-groups": [
+      {
+        "label": "KV Table Properties",
+        "properties": [
+          {
+            "widget-type": "dataset-selector",
+            "label": "Table Name",
+            "name": "name"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "widget-type": "non-editable-schema-editor",
+        "schema": {
+          "name": "etlSchemaBody",
+          "type": "record",
+          "fields": [
+            {
+              "name": "key",
+              "type": "bytes"
+            },
+            {
+              "name": "value",
+              "type": "bytes"
+            }
+          ]
+        }
+      }
+    ],
+    "jump-config": {
+      "datasets": [{
+        "ref-property-name": "name"
+      }]
+    }
+  }  
+
+In this example, the `name` field of the `dataset-selector` will have a "jump" link added in the CDAP UI.
 
 Example Widget JSON
 ===================
@@ -793,108 +895,11 @@ These changes describe changes added with each version of the specification.
 
 - **1.1:** Initial version of the specification.
 
-- **1.2:** Added multiple inputs (``multiple-inputs``) for a plugin. A plugin can accept
-  multiple input schemas and from them generate a single output schema. Using the field
-  ``multiple-inputs`` lets the CDAP UI show the multiple input schemas coming into a
-  specific plugin, instead of assuming that all of the schemas coming in from different
-  plugins are identical. For example::
-  
-    {
-      "metadata": {
-        "spec-version": "1.2"
-      },
-      "inputs": {
-        "multipleInputs": true
-      },
-      "configuration-groups": [
-        {
-          "label": "Join",
-          "properties": [
-            {
-              "widget-type": "sql-select-fields",
-              "label": "Fields",
-              "name": "selectedFields",
-              "description": "List of fields...in the output."
-            },
-            {
-              "widget-type": "join-types",
-              "label": "Join Type",
-              "name": "requiredInputs",
-              "description": "Type of joins to be...required input."
-            },
-            {
-              "widget-type": "sql-conditions",
-              "label": "Join Condition",
-              "name": "joinKeys",
-              "description": "List of join keys to perform join operation."
-            },
-            {
-              "widget-type": "textbox",
-              "label": "Number of Partitions",
-              "name": "numPartitions",
-              "plugin-function": {
-                "method": "POST",
-                "label": "Generate Schema",
-                "widget": "outputSchema",
-                "output-property": "schema",
-                "plugin-method": "outputSchema",
-                "position": "bottom",
-                "multiple-inputs": true,
-                "button-class": "btn-hydrator"
-              }
-            }
-          ]
-        }
-      ],
-      "outputs": []
-    }
+- **1.2:** Added :ref:`multiple inputs <plugins-presentation-inputs>` for a plugin.
 
-- **1.3:** Added ``jump-config``. It specifies which plugin property names are a stream or
-  dataset that are to be used, in the CDAP UI, to directly jump to a detailed view of
-  streams and datasets created or used by a specific plugin. For example::
-  
-    {
-      "metadata": {
-        "spec-version": "1.3"
-      },
-      "configuration-groups": [
-        {
-          "label": "KV Table Properties",
-          "properties": [
-            {
-              "widget-type": "dataset-selector",
-              "label": "Table Name",
-              "name": "name"
-            }
-          ]
-        }
-      ],
-      "outputs": [
-        {
-          "widget-type": "non-editable-schema-editor",
-          "schema": {
-            "name": "etlSchemaBody",
-            "type": "record",
-            "fields": [
-              {
-                "name": "key",
-                "type": "bytes"
-              },
-              {
-                "name": "value",
-                "type": "bytes"
-              }
-            ]
-          }
-        }
-      ],
-      "jump-config": {
-        "datasets": [{
-          "ref-property-name": "name"
-        }]
-      }
-    }  
-  
+- **1.3:** Added :ref:`jump-config <plugins-presentation-jumps>` to specify which property
+  names are to be connected in the CDAP UI to a detailed view of a stream or dataset.
+
 - **1.4:** Added ``hide-property`` for any field. This property takes in the highest
   precedence when determining whether to show or hide a specific property. This can be used
   to hide all those properties of the plugin that might not be of interest to a plugin user.
