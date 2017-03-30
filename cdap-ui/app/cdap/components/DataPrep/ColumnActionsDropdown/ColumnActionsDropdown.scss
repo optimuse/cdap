@@ -34,9 +34,16 @@
   }
 
   .action-item {
-    padding: 10px 15px;
+    padding: 10px 0px;
+    margin: 0 15px;
     cursor: pointer;
     position: relative;
+
+    &.filter-directive,
+    &.keep-column-directive,
+    &.fill-null-or-empty-directive {
+      border-bottom: 1px solid #aaaaaa;
+    }
 
     &:hover:not(.active) {
       background-color: #eeeeee;

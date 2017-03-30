@@ -48,7 +48,7 @@ export default class KeepColumnDirective extends Component {
   render() {
     return (
       <div
-        className="keep-column clearfix action-item"
+        className="keep-column-directive clearfix action-item"
         onClick={this.applyDirective}
       >
         <span>
