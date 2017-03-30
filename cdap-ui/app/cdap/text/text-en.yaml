@@ -270,6 +270,13 @@ features:
             label: XML to JSON
             placeholder: Enter depth
         title: Parse
+      Copy:
+        title: Copy Column
+        placeholder: Destination Column
+        copySuffix: _copy
+        duplicate: Another column with the same name already exists. Rename column, or click “Apply” to overwrite.
+      Keep:
+        title: Delete Other Columns
     pageTitle: CDAP | Data Preparation
     TopPanel:
       invalidFieldNameMessage: Invalid field name "{fieldName}"

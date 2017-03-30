@@ -28,8 +28,8 @@ import ParseDirective from 'components/DataPrep/Directives/Parse';
 import FillNullOrEmpty from 'components/DataPrep/Directives/FillNullOrEmpty';
 import DropColumn from 'components/DataPrep/Directives/DropColumn';
 import FilterDirective from 'components/DataPrep/Directives/Filter';
-import CopyColumn from 'components/DataPrep/Directives/CopyColumn';
-import KeepColumn from 'components/DataPrep/Directives/KeepColumn';
+import CopyColumnDirective from 'components/DataPrep/Directives/CopyColumn';
+import KeepColumnDirective from 'components/DataPrep/Directives/KeepColumn';
 
 require('./ColumnActionsDropdown.scss');
 
@@ -51,7 +51,7 @@ export default class ColumnActionsDropdown extends Component {
       },
       {
         id: shortid.generate(),
-        tag: CopyColumn
+        tag: CopyColumnDirective
       },
       {
         id: shortid.generate(),
@@ -59,7 +59,7 @@ export default class ColumnActionsDropdown extends Component {
       },
       {
         id: shortid.generate(),
-        tag: KeepColumn
+        tag: KeepColumnDirective
       },
       {
         id: shortid.generate(),

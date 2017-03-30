@@ -16,14 +16,19 @@
 
 import React, { Component, PropTypes } from 'react';
 import classnames from 'classnames';
+import T from 'i18n-react';
 import {execute} from 'components/DataPrep/store/DataPrepActionCreator';
+import DataPrepStore from 'components/DataPrep/store';
+import DataPrepActions from 'components/DataPrep/store/DataPrepActions';
+
+const PREFIX = 'features.DataPrep.Directives.Copy';
 
 export default class CopyColumnDirective extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      input: ''
+      input: this.props.column + T.translate(`${PREFIX}.copySuffix`)
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -32,7 +37,7 @@ export default class CopyColumnDirective extends Component {
   }
 
   componentDidUpdate() {
-    if (this.props.isOpen && this.state.input.length === 0) {
+    if (this.props.isOpen) {
       this.inputBox.focus();
     }
   }
@@ -45,6 +50,7 @@ export default class CopyColumnDirective extends Component {
 
   handleInputChange(e) {
     this.setState({input: e.target.value});
+    this.columnAlreadyExists(e.target.value);
   }
 
   handleKeyPress(e) {
@@ -53,12 +59,17 @@ export default class CopyColumnDirective extends Component {
     this.applyDirective();
   }
 
+  columnAlreadyExists(colName) {
+    let headers = DataPrepStore.getState().dataprep.headers;
+    return headers.includes(colName);
+  }
+
   applyDirective() {
     if (this.state.input.length === 0) { return; }
     let source = this.props.column;
     let destination = this.state.input;
 
-    let directive = `copy ${source} ${destination}`;
+    let directive = `copy ${source} ${destination} true`;
 
     execute([directive])
       .subscribe(() => {
@@ -66,8 +77,12 @@ export default class CopyColumnDirective extends Component {
         this.props.onComplete();
       }, (err) => {
         console.log('error', err);
-        this.setState({
-          error: err.message || err.response.message
+
+        DataPrepStore.dispatch({
+          type: DataPrepActions.setError,
+          payload: {
+            message: err.message || err.response.message
+          }
         });
       });
   }
@@ -80,7 +95,7 @@ export default class CopyColumnDirective extends Component {
         className="copy-column-detail second-level-popover"
         onClick={this.preventPropagation}
       >
-        <h5>Copy Column</h5>
+        <h5>{T.translate(`${PREFIX}.title`)}</h5>
 
         <div className="input">
           <input
@@ -89,10 +104,16 @@ export default class CopyColumnDirective extends Component {
             value={this.state.input}
             onChange={this.handleInputChange}
             onKeyPress={this.handleKeyPress}
-            placeholder="Destination column"
+            placeholder={T.translate(`${PREFIX}.placeholder`)}
             ref={ref => this.inputBox = ref}
           />
         </div>
+
+        {
+          this.columnAlreadyExists(this.state.input) ? (
+            <span>{T.translate(`${PREFIX}.duplicate`)}</span>
+          ) : null
+        }
 
         <hr />
 
@@ -102,14 +123,14 @@ export default class CopyColumnDirective extends Component {
             onClick={this.applyDirective}
             disabled={this.state.input.length === 0}
           >
-            Apply
+            {T.translate('features.DataPrep.Directives.apply')}
           </button>
 
           <button
             className="btn btn-link float-xs-right"
             onClick={this.props.close}
           >
-            Cancel
+            {T.translate('features.DataPrep.Directives.cancel')}
           </button>
         </div>
 
@@ -120,11 +141,13 @@ export default class CopyColumnDirective extends Component {
   render() {
     return (
       <div
-        className={classnames('fill-null-or-empty-directive clearfix action-item', {
+        className={classnames('copy-directive clearfix action-item', {
           'active': this.props.isOpen
         })}
       >
-        <span>Copy Column</span>
+        <span>
+          {T.translate(`${PREFIX}.title`)}
+        </span>
 
         <span className="float-xs-right">
           <span className="fa fa-caret-right" />
