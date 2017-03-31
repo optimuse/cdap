@@ -168,25 +168,14 @@ public class DatasetBasedTimeScheduleStore extends RAMJobStore {
 
   private void executeDelete(final TriggerKey triggerKey) {
     final TriggerKey versionLessTriggerKey = removeAppVersion(triggerKey);
-    if (versionLessTriggerKey != null) {
-      try {
-        factory.createExecutor(ImmutableList.of((TransactionAware) table))
-          .execute(new TransactionExecutor.Subroutine() {
-            @Override
-            public void apply() throws Exception {
-              removeTrigger(table, versionLessTriggerKey);
-            }
-          });
-    } catch (Throwable t) {
-      // Ignore if the error if column is not found.
-    }
-  }
-
-  try {
+    try {
       factory.createExecutor(ImmutableList.of((TransactionAware) table))
         .execute(new TransactionExecutor.Subroutine() {
           @Override
           public void apply() throws Exception {
+            if (readTrigger(versionLessTriggerKey) != null) {
+              removeTrigger(table, versionLessTriggerKey);
+            }
             removeTrigger(table, triggerKey);
           }
         });
@@ -196,16 +185,22 @@ public class DatasetBasedTimeScheduleStore extends RAMJobStore {
   }
 
   private void executeDelete(final JobKey jobKey) {
-    try {
-      factory.createExecutor(ImmutableList.of((TransactionAware) table))
-        .execute(new TransactionExecutor.Subroutine() {
-          @Override
-          public void apply() throws Exception {
-            removeJob(table, jobKey);
-          }
-        });
-    } catch (Throwable th) {
-      throw Throwables.propagate(th);
+    final JobKey versionLessJobKey = removeAppVersion(jobKey);
+    if (versionLessJobKey != null) {
+      try {
+        factory.createExecutor(ImmutableList.of((TransactionAware) table))
+          .execute(new TransactionExecutor.Subroutine() {
+            @Override
+            public void apply() throws Exception {
+              if (readJob(versionLessJobKey) != null) {
+                removeJob(table, versionLessJobKey);
+              }
+              removeJob(table, jobKey);
+            }
+          });
+      } catch (Throwable t) {
+        throw Throwables.propagate(t);
+      }
     }
   }
 
@@ -278,6 +273,21 @@ public class DatasetBasedTimeScheduleStore extends RAMJobStore {
     byte[][] col = new byte[1][];
     col[0] = Bytes.toBytes(key.getName());
     table.delete(JOB_KEY, col);
+  }
+
+  private JobDetail readJob(JobKey jobKey) {
+    byte[][] cols = new byte[1][];
+    cols[0] = Bytes.toBytes(jobKey.toString());
+    Row result = table.get(JOB_KEY, cols);
+    byte[] bytes = null;
+    if (!result.isEmpty()) {
+      bytes = result.get(cols[0]);
+    }
+    if (bytes != null) {
+      return (JobDetail) SerializationUtils.deserialize(bytes);
+    } else {
+      return null;
+    }
   }
 
   private TriggerStatusV2 readTrigger(TriggerKey key) {
@@ -355,8 +365,8 @@ public class DatasetBasedTimeScheduleStore extends RAMJobStore {
           } else {
             LOG.debug("Schedule: No triggers found in job store");
           }
-      }
-    });
+        }
+      });
 
     for (JobDetail job : jobs) {
       super.storeJob(job, true);
@@ -395,14 +405,28 @@ public class DatasetBasedTimeScheduleStore extends RAMJobStore {
   private TriggerKey removeAppVersion(TriggerKey key) {
     String jobName = key.getName();
     String[] splits = jobName.split(":");
-    if (splits.length != 5) {
-      LOG.debug("Skip removing app version for key since it doesn't have one : {}", jobName);
+    // New TriggerKey name has format = namespace:application:version:type:program:schedule
+    if (splits.length != 6) {
+      LOG.debug("Skip removing app version for trigger key since it doesn't have one : {}", jobName);
       return null;
     }
 
     List<String> splitArray = new ArrayList<>(Arrays.asList(splits));
     splitArray.remove(2);
     return new TriggerKey(Joiner.on(":").join(splitArray), key.getGroup());
+  }
+
+  private JobKey removeAppVersion(JobKey origJobKey) {
+    String jobName = origJobKey.getName();
+    String[] splits = jobName.split(":");
+    if (splits.length != 5) {
+      LOG.debug("Skip removing app version for job key since it doesn't have one : {}", jobName);
+      return null;
+    }
+
+    List<String> splitArray = new ArrayList<>(Arrays.asList(splits));
+    splitArray.remove(2);
+    return new JobKey(Joiner.on(":").join(splitArray), origJobKey.getGroup());
   }
 
   @Nullable
