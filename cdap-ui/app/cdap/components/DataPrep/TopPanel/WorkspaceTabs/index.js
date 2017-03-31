@@ -23,6 +23,7 @@ import cookie from 'react-cookie';
 import {setWorkspace} from 'components/DataPrep/store/DataPrepActionCreator';
 import WorkspaceModal from 'components/DataPrep/TopPanel/WorkspaceTabs/WorkspaceModal';
 import WorkspacePropertiesModal from 'components/DataPrep/TopPanel/WorkspaceTabs/WorkspacePropertiesModal';
+import ee from 'event-emitter';
 
 require('./WorkspaceTabs.scss');
 
@@ -42,6 +43,11 @@ export default class WorkspaceTabs extends Component {
     this.toggleCreateWorkspace = this.toggleCreateWorkspace.bind(this);
     this.toggleWorkspacePropertiesModal = this.toggleWorkspacePropertiesModal.bind(this);
     this.getWorkspaceList = this.getWorkspaceList.bind(this);
+    this.eventEmitter = ee(ee);
+
+
+
+    this.eventEmitter.on('DATAPREP_OPEN_UPLOAD', this.toggleWorkspacePropertiesModal);
 
     this.sub = DataPrepStore.subscribe(() => {
       this.setState({
@@ -52,6 +58,14 @@ export default class WorkspaceTabs extends Component {
 
   componentWillMount() {
     this.getWorkspaceList();
+  }
+
+  componentWillUnmount() {
+    if (this.sub) {
+      this.sub();
+    }
+
+    this.eventEmitter.off('DATAPREP_OPEN_UPLOAD', this.toggleWorkspacePropertiesModal);
   }
 
   getWorkspaceList() {
@@ -66,15 +80,13 @@ export default class WorkspaceTabs extends Component {
         this.setState({
           workspaceList: res.values.sort()
         });
+
+        if (res.values.length === 0) {
+          this.toggleCreateWorkspace();
+        }
       }, (err) => {
         console.log('Workspace List Error', err);
       });
-  }
-
-  componentWillUnmount() {
-    if (this.sub) {
-      this.sub();
-    }
   }
 
   setActiveWorkspace(workspaceId) {
@@ -112,7 +124,11 @@ export default class WorkspaceTabs extends Component {
     if (!this.state.workspaceModal) { return null; }
 
     return (
-      <WorkspaceModal toggle={this.toggleCreateWorkspace} />
+      <WorkspaceModal
+        toggle={this.toggleCreateWorkspace}
+        onCreate={this.getWorkspaceList}
+        isEmpty={this.state.workspaceList.length === 0}
+      />
     );
   }
 

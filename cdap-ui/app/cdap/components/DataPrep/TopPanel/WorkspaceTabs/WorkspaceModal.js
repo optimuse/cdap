@@ -88,6 +88,8 @@ export default class WorkspaceModal extends Component {
         }
       });
 
+      this.props.onCreate();
+
     }, (err) => {
       this.setState({
         messageType: 'DANGER',
@@ -208,7 +210,7 @@ export default class WorkspaceModal extends Component {
   }
 
   attemptModalClose() {
-    if (!this.state.activeWorkspace) { return; }
+    if (!this.state.activeWorkspace || this.props.isEmpty) { return; }
 
     this.props.toggle();
   }
@@ -225,12 +227,16 @@ export default class WorkspaceModal extends Component {
             Create Workspace
           </span>
 
-          <div
-            className="close-section float-xs-right"
-            onClick={this.props.toggle}
-          >
-            <span className="fa fa-times" />
-          </div>
+          {
+            this.props.isEmpty ? null : (
+              <div
+                className="close-section float-xs-right"
+                onClick={this.attemptModalClose}
+              >
+                <span className="fa fa-times" />
+              </div>
+            )
+          }
         </ModalHeader>
         <ModalBody>
           <div>
@@ -263,5 +269,7 @@ export default class WorkspaceModal extends Component {
 }
 
 WorkspaceModal.propTypes = {
-  toggle: PropTypes.func.isRequired
+  toggle: PropTypes.func.isRequired,
+  onCreate: PropTypes.func,
+  isEmpty: PropTypes.bool
 };
