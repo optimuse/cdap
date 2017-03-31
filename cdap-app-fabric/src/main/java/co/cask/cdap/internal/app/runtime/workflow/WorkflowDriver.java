@@ -27,7 +27,6 @@ import co.cask.cdap.api.common.Scope;
 import co.cask.cdap.api.dataset.DatasetManagementException;
 import co.cask.cdap.api.dataset.DatasetProperties;
 import co.cask.cdap.api.metrics.MetricsCollectionService;
-import co.cask.cdap.api.retry.RetryableException;
 import co.cask.cdap.api.schedule.SchedulableProgramType;
 import co.cask.cdap.api.security.store.SecureStore;
 import co.cask.cdap.api.security.store.SecureStoreManager;
@@ -513,18 +512,21 @@ final class WorkflowDriver extends AbstractExecutionThreadService {
       final DatasetCreationSpec instanceSpec = workflowSpec.getLocalDatasetSpecs().get(entry.getKey());
       LOG.debug("Adding Workflow local dataset instance: {}", localInstanceName);
 
-      Retries.callWithRetries(new Retries.Callable<Void, IOException>() {
-        @Override
-        public Void call() throws IOException {
-          try {
+      try {
+        Retries.callWithRetries(new Retries.Callable<Void, Exception>() {
+          @Override
+          public Void call() throws Exception {
             datasetFramework.addInstance(instanceSpec.getTypeName(), instanceId,
                                          addLocalDatasetProperty(instanceSpec.getProperties()));
-          } catch (DatasetManagementException e) {
-            throw new RetryableException(e);
+            return null;
           }
-          return null;
-        }
-      }, RetryStrategies.fixDelay(Constants.Retry.RUN_RECORD_UPDATE_RETRY_DELAY_SECS, TimeUnit.SECONDS));
+        }, RetryStrategies.fixDelay(Constants.Retry.CREATE_LOCAL_DATASET_RETRY_DELAY_SECS, TimeUnit.SECONDS));
+      } catch (IOException | DatasetManagementException e) {
+        throw e;
+      } catch (Exception e) {
+        // this should never happen
+        throw new IllegalStateException(e);
+      }
     }
   }
 
