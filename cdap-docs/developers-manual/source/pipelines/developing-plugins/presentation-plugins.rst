@@ -155,8 +155,6 @@ Each individual property of the plugin is represented by a configuration, compos
 - :ref:`widget-attributes: <plugins-presentation-widgets>` A map of attributes that the
   widget type requires to be defined in order to render the property in the CDAP UI. The
   attributes required depend on the widget type used.
-- :ref:`hide-property: <plugins-presentation-hide-property>` An optional specification; if
-  included, the property is hidden in the CDAP UI.
 - :ref:`plugin-function: <plugins-presentation-plugin-function>`
   An optional map of plugin method and its widget attributes that can be applied to a
   particular plugin property.
@@ -305,6 +303,23 @@ CDAP pipelines as of version |version|.
             }
           }
      
+   * - ``hidden``
+     - ``default``: default ``string`` value for the widget
+     - ``string``
+     - This "hidden" widget allows values to be set for a property but hidden from users.
+       A default can be supplied that will be used as the value for the property.
+     - .. container:: copyable copyable-text
+
+         ::
+
+          {
+            "name": "property-hidden",
+            "widget-type": "hidden",
+            "widget-attributes": {
+              "default": "defaultValue"
+            }
+          }
+
    * - ``input-field-selector``
      - No attributes
      - ``string``
@@ -550,26 +565,7 @@ CDAP pipelines as of version |version|.
               "default": "Default text."
             }
           }
-     
 
-.. _plugins-presentation-hide-property:
-
-Hiding Properties
------------------
-Beginning with version 1.4 of the specification, any field of the plugin can be specified
-with a ``hide-property``. This property determines whether to show or hide a specific
-property. This can be used to hide properties of a plugin that might not be of interest to
-a plugin user, though they may still require definition.
-
-For example, this would hide the ``path`` property of a plugin::
-
-  {
-    "name": "path",
-    "label": "Path",
-    "widget-type": "textbox",
-    "hide-property": true
-  }
-        
 
 .. _plugins-presentation-plugin-function:
 
@@ -918,5 +914,4 @@ These changes describe changes added with each version of the specification.
 - **1.3:** Added :ref:`jump-config <plugins-presentation-jumps>` to specify which property
   names are to be connected in the CDAP UI to a detailed view of a stream or dataset.
 
-- **1.4:** Added :ref:`hide-property <plugins-presentation-hide-property>` for any field
-  of a plugin.
+- **1.4:** Added ``widget-type: hidden``.
