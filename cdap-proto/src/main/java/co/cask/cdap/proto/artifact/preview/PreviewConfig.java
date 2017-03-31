@@ -33,8 +33,8 @@ public class PreviewConfig {
   private final Map<String, String> runtimeArgs;
   private final Integer timeout;
 
-  public PreviewConfig(String programName, ProgramType programType,
-                       @Nullable Map<String, String> runtimeArgs, @Nullable Integer timeout) {
+  public PreviewConfig(String programName, ProgramType programType, @Nullable Map<String, String> runtimeArgs,
+                       @Nullable Integer timeout) {
     this.programName = programName;
     this.programType = programType;
     this.runtimeArgs = runtimeArgs == null ? new HashMap<String, String>() : new HashMap<>(runtimeArgs);

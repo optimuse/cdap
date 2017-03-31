@@ -56,11 +56,10 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final String datasetName, final Map<String, String> arguments) {
-    final Output actualOutput = getOutput(Output.ofDataset(datasetName, arguments));
     String alias = LogContext.runWithoutLoggingUnchecked(new Callable<String>() {
       @Override
       public String call() throws Exception {
-        Output output = suffixOutput(actualOutput);
+        Output output = suffixOutput(getOutput(Output.ofDataset(datasetName, arguments)));
         mrContext.addOutput(output);
         return output.getAlias();
       }
@@ -70,11 +69,10 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final String outputName, final OutputFormatProvider outputFormatProvider) {
-    final Output actualOutput = getOutput(Output.of(outputName, outputFormatProvider));
     String alias = LogContext.runWithoutLoggingUnchecked(new Callable<String>() {
       @Override
       public String call() throws Exception {
-        Output output = suffixOutput(actualOutput);
+        Output output = suffixOutput(getOutput(Output.of(outputName, outputFormatProvider)));
         mrContext.addOutput(output);
         return output.getAlias();
       }
@@ -84,11 +82,12 @@ public class MapReduceSinkContext extends MapReduceBatchContext implements Batch
 
   @Override
   public void addOutput(final Output output) {
-    final Output actualOutput = getOutput(output);
+    final Output actualOutput = suffixOutput(getOutput(output));
     Output trackableOutput = LogContext.runWithoutLoggingUnchecked(new Callable<Output>() {
       @Override
       public Output call() throws Exception {
-        Output trackableOutput = ExternalDatasets.makeTrackable(mrContext.getAdmin(), suffixOutput(actualOutput));
+        Output trackableOutput = isPreviewEnabled ? actualOutput : ExternalDatasets.makeTrackable(mrContext.getAdmin(),
+                                                                                                  actualOutput);
         mrContext.addOutput(trackableOutput);
         return trackableOutput;
       }

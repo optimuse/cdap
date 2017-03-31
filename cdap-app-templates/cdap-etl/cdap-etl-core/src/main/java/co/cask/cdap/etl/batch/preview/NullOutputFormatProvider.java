@@ -24,7 +24,7 @@ import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import java.util.Map;
 
 /**
- *
+ * An {@link OutputFormatProvider} which provides a {@link NullOutputFormat} which writes nothing.
  */
 public class NullOutputFormatProvider implements OutputFormatProvider {
 

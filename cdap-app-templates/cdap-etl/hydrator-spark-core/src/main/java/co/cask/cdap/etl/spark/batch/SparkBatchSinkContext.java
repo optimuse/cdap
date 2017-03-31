@@ -60,19 +60,18 @@ public class SparkBatchSinkContext extends AbstractSparkBatchContext implements 
 
   @Override
   public void addOutput(String datasetName, Map<String, String> arguments) {
-    Output actualOutput = getOutput(Output.ofDataset(datasetName, arguments));
-    sinkFactory.addOutput(getStageName(), suffixOutput(actualOutput));
+    sinkFactory.addOutput(getStageName(), suffixOutput(getOutput(Output.ofDataset(datasetName, arguments))));
   }
 
   @Override
   public void addOutput(String outputName, OutputFormatProvider outputFormatProvider) {
-    Output actualOutput = getOutput(Output.of(outputName, outputFormatProvider));
-    sinkFactory.addOutput(getStageName(), suffixOutput(actualOutput));
+    sinkFactory.addOutput(getStageName(), suffixOutput(getOutput(Output.of(outputName, outputFormatProvider))));
   }
 
   @Override
   public void addOutput(Output output) {
-    Output trackableOutput = ExternalDatasets.makeTrackable(admin, suffixOutput(getOutput(output)));
+    Output actualOutput = suffixOutput(getOutput(output));
+    Output trackableOutput = isPreviewEnabled ? actualOutput : ExternalDatasets.makeTrackable(admin, actualOutput);
     sinkFactory.addOutput(getStageName(), trackableOutput);
   }
 

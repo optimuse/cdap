@@ -108,7 +108,7 @@ public final class ExternalDatasets {
 
     // Output is a dataset that implements input format provider,
     // this can be tracked by itself without creating an external dataset
-    if (outputFormatProvider instanceof Dataset || outputFormatProvider instanceof NullOutputFormatProvider) {
+    if (outputFormatProvider instanceof Dataset) {
       return output;
     }
 
