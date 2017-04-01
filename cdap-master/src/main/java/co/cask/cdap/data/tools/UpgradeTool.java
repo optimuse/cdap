@@ -413,12 +413,6 @@ public class UpgradeTool {
 
     LOG.info("Upgrading AppMetadatastore...");
     store.upgradeAppVersion();
-
-    LOG.info("Upgrading stream size schedule store...");
-    datasetBasedStreamSizeScheduleStore.upgrade();
-
-    LOG.info("Upgrading time schedule store...");
-    datasetBasedTimeScheduleStore.upgrade();
   }
 
   private void performHBaseUpgrade() throws Exception {
