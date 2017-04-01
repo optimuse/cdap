@@ -137,7 +137,7 @@ export default class FilterDirective extends Component {
         directive = `${condition} ${column} ${textValue}`;
         break;
       case 'CUSTOMCONDITION':
-        directive = `${condition} ${this.state.customFilter}`;
+        directive = `${condition} ${column} ${this.state.customFilter}`;
         break;
     }
 
@@ -172,7 +172,7 @@ export default class FilterDirective extends Component {
           value={this.state.customFilter}
           onChange={this.handleCustomFilterChange}
           ref={ref => this.customFilterRef = ref}
-          placeholder={T.translate(`${SUFFIX}.Placeholders.CUSTOMCONDITION`, {columnName: this.props.column})}
+          placeholder={T.translate(`${SUFFIX}.Placeholders.CUSTOMCONDITION`)}
         />
       </div>
     );

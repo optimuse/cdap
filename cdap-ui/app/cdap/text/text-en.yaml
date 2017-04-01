@@ -215,7 +215,7 @@ features:
         if: If
         KEEP: Keep rows
         Placeholders:
-          CUSTOMCONDITION: "e.g. {columnName} < 30"
+          CUSTOMCONDITION: e.g. < 30
           TEXTCONTAINS: Enter contained value
           TEXTENDSWITH: Enter suffix
           TEXTEXACTLY: Enter value
