@@ -343,19 +343,26 @@ class HydratorPlusPlusTopPanelCtrl {
       _cdapNsPath: '/previews/' + previewId + '/status',
       interval: 5000
     }, (res) => {
-      if (res.status !== 'RUNNING') {
+      if (res.status !== 'RUNNING' || res.status !== 'STARTED') {
         this.stopTimer();
         this.previewRunning = false;
         this.dataSrc.stopPoll(res.__pollId__);
+        let pipelineName = this.HydratorPlusPlusConfigStore.getName();
+        let pipelinePreviewPlaceholder = pipelineName.length > 0 ? `Preview of pipeline "${pipelineName}"` : 'Pipeline preview';
         if (res.status === 'COMPLETED') {
           this.myAlertOnValium.show({
             type: 'success',
-            content: 'Pipeline preview is finished.'
+            content: `${pipelinePreviewPlaceholder} is finished.`
+          });
+        } else if (res.status === 'STOPPED' || res.status === 'KILLED') {
+          this.myAlertOnValium.show({
+            type: 'success',
+            content: `${pipelinePreviewPlaceholder} was stopped successfully.`
           });
         } else {
           this.myAlertOnValium.show({
-            type: 'success',
-            content: 'Pipeline preview was stopped successfully.'
+            type: 'danger',
+            content: `${pipelinePreviewPlaceholder} failed. Please check logs for more information.`
           });
         }
       }
