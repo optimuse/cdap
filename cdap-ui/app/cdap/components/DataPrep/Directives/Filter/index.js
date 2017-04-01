@@ -77,7 +77,7 @@ export default class FilterDirective extends Component {
   componentDidUpdate() {
     if (this.state.selectedCondition.substr(0, 4) === 'TEXT' && this.state.textFilter.length === 0 && this.textFilterRef) {
       this.textFilterRef.focus();
-    } else if (this.state.selectedCondition.substr(0, 6) === 'CUSTOM' && this.state.customFilter.length === 0) {
+    } else if (this.state.selectedCondition.substr(0, 6) === 'CUSTOM' && this.state.customFilter.length === 0 && this.customFilterRef) {
       this.customFilterRef.focus();
     }
   }
