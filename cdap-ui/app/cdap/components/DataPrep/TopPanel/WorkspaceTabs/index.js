@@ -27,6 +27,8 @@ import ee from 'event-emitter';
 
 require('./WorkspaceTabs.scss');
 
+const MAX_NUM_TABS = 7;
+
 export default class WorkspaceTabs extends Component {
   constructor(props) {
     super(props);
@@ -37,15 +39,16 @@ export default class WorkspaceTabs extends Component {
       activeWorkspace: initialState.workspaceId,
       workspaceList: [],
       workspaceModal: false,
-      workspacePropertiesModal: false
+      workspacePropertiesModal: false,
+      beginIndex: 0
     };
 
     this.toggleCreateWorkspace = this.toggleCreateWorkspace.bind(this);
     this.toggleWorkspacePropertiesModal = this.toggleWorkspacePropertiesModal.bind(this);
     this.getWorkspaceList = this.getWorkspaceList.bind(this);
+    this.next = this.next.bind(this);
+    this.prev = this.prev.bind(this);
     this.eventEmitter = ee(ee);
-
-
 
     this.eventEmitter.on('DATAPREP_OPEN_UPLOAD', this.toggleWorkspacePropertiesModal);
 
@@ -77,8 +80,20 @@ export default class WorkspaceTabs extends Component {
           this.setActiveWorkspace(res.values[0]);
         }
 
+        let workspaceList = res.values.sort();
+        let beginIndex = workspaceList.indexOf(this.state.activeWorkspace);
+
+        if (beginIndex > (workspaceList.length - 1 - MAX_NUM_TABS)) {
+          beginIndex = workspaceList.length - 1 - MAX_NUM_TABS;
+        }
+
+        if (beginIndex < 0) {
+          beginIndex = 0;
+        }
+
         this.setState({
-          workspaceList: res.values.sort()
+          workspaceList: workspaceList,
+          beginIndex
         });
 
         if (res.values.length === 0) {
@@ -144,14 +159,31 @@ export default class WorkspaceTabs extends Component {
     );
   }
 
-  renderActiveWorkspace() {
+  next() {
+    if (this.state.beginIndex + MAX_NUM_TABS >= this.state.workspaceList.length) { return; }
+
+    this.setState({
+      beginIndex: this.state.beginIndex + 1
+    });
+  }
+
+  prev() {
+    if (this.state.beginIndex <= 0) { return; }
+
+    this.setState({
+      beginIndex: this.state.beginIndex - 1
+    });
+  }
+
+  renderActiveWorkspace(workspace) {
     return (
       <div
-        className="active-workspace"
+        key={workspace}
+        className="workspace-tab active"
         onClick={this.toggleWorkspacePropertiesModal}
       >
         <span>
-          {this.state.activeWorkspace}
+          {workspace}
         </span>
         <span className="fa fa-pencil" />
         {this.renderWorkspacePropertiesModal()}
@@ -159,36 +191,63 @@ export default class WorkspaceTabs extends Component {
     );
   }
 
+  renderInactiveWorkspace(workspace) {
+    return (
+      <div
+        key={workspace}
+        className="workspace-tab"
+        onClick={this.setActiveWorkspace.bind(this, workspace)}
+        title={workspace}
+      >
+        {workspace}
+      </div>
+    );
+  }
+
   renderWorkspaceTabs() {
-    let workspaceList = this.state.workspaceList.filter((workspaceId) => {
-      return workspaceId !== this.state.activeWorkspace;
-    });
+    let beginIndex = this.state.beginIndex;
+    let endIndex = beginIndex + MAX_NUM_TABS;
+
+    let displayWorkspace = this.state.workspaceList.slice(beginIndex, endIndex);
+
+    let prevArrow;
+    if (this.state.beginIndex !== 0) {
+      prevArrow = (
+        <span
+          className="tab-arrow text-xs-center"
+          onClick={this.prev}
+        >
+          <span className="fa fa-chevron-left" />
+        </span>
+      );
+    }
+
+    let nextArrow;
+    if (this.state.beginIndex + MAX_NUM_TABS < this.state.workspaceList.length) {
+      nextArrow = (
+        <span
+          className="tab-arrow text-xs-center"
+          onClick={this.next}
+        >
+          <span className="fa fa-chevron-right" />
+        </span>
+      );
+    }
 
     return (
       <div className="workspace-tabs-list">
+        {prevArrow}
+
         {
-          workspaceList.map((workspace) => {
-            return (
-              <div
-                key={workspace}
-                className="workspace-tab"
-                onClick={this.setActiveWorkspace.bind(this, workspace)}
-                title={workspace}
-              >
-                {workspace}
-              </div>
-            );
+          displayWorkspace.map((workspace) => {
+            return this.state.activeWorkspace === workspace ?
+              this.renderActiveWorkspace(workspace)
+            :
+              this.renderInactiveWorkspace(workspace);
           })
         }
 
-        <div
-          className="workspace-tab text-xs-center"
-          onClick={this.toggleCreateWorkspace}
-        >
-          <span className="fa fa-plus" />
-
-          {this.renderCreateWorkspaceModal()}
-        </div>
+        {nextArrow}
       </div>
     );
   }
@@ -196,8 +255,16 @@ export default class WorkspaceTabs extends Component {
   render() {
     return (
       <div className="workspace-tabs">
-        {this.renderActiveWorkspace()}
         {this.renderWorkspaceTabs()}
+
+        <div
+          className="workspace-tab add-workspace-button text-xs-center"
+          onClick={this.toggleCreateWorkspace}
+        >
+          <span className="fa fa-plus" />
+
+          {this.renderCreateWorkspaceModal()}
+        </div>
       </div>
     );
   }

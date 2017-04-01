@@ -31,7 +31,7 @@ export default class WorkspaceModal extends Component {
     super(props);
 
     this.state = {
-      activeWorkspace: '',
+      activeWorkspace: DataPrepStore.getState().dataprep.workspaceId,
       workspaceId: null,
       file: null,
       message: null,
