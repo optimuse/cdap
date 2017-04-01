@@ -83,8 +83,8 @@ export default class WorkspaceTabs extends Component {
         let workspaceList = res.values.sort();
         let beginIndex = workspaceList.indexOf(this.state.activeWorkspace);
 
-        if (beginIndex > (workspaceList.length - 1 - MAX_NUM_TABS)) {
-          beginIndex = workspaceList.length - 1 - MAX_NUM_TABS;
+        if (beginIndex > (workspaceList.length - MAX_NUM_TABS)) {
+          beginIndex = workspaceList.length - MAX_NUM_TABS;
         }
 
         if (beginIndex < 0) {
