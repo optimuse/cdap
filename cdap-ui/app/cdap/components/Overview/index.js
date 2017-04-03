@@ -24,7 +24,11 @@ import classnames from 'classnames';
 import SearchStore from 'components/EntityListView/SearchStore';
 import SearchStoreActions from 'components/EntityListView/SearchStore/SearchStoreActions';
 import {updateQueryString} from 'components/EntityListView/SearchStore/ActionCreator';
+import {MyMetadataApi} from 'api/metadata';
+import NamespaceStore from 'services/NamespaceStore';
+import {convertEntityTypeToApi} from 'services/entity-type-api-converter';
 require('./Overview.scss');
+import T from 'i18n-react';
 
 export default class Overview extends Component {
   constructor(props) {
@@ -43,28 +47,67 @@ export default class Overview extends Component {
   componentWillMount() {
     this.searchStoreSubscription = SearchStore.subscribe(() => {
       let searchState = SearchStore.getState().search;
-      let overviewEntity = searchState.overviewEntity;
-      if (isNil(overviewEntity)) {
+      if (isNil(searchState.overviewEntity)) {
         this.setState({
           entity: null,
           showOverview: false,
-          tag: null
+          tag: null,
+          errorContent: null
         });
         return;
       }
-      if (overviewEntity.id !== objectQuery(this.state, 'entity', 'id')) {
-        let entity = searchState.results.find(searchEntitiy => searchEntitiy.id === overviewEntity.id && searchEntitiy.type === overviewEntity.type);
-        if (!isNil(entity)) {
-          if (overviewEntity.uniqueId) {
-            entity = Object.assign({}, entity, {uniqueId: overviewEntity.uniqueId});
+      let {id: entityId, type: entityType} = searchState.overviewEntity;
+      let entityTypeLabel = entityType;
+      entityType = convertEntityTypeToApi(entityType || entityType);
+      let namespace = NamespaceStore.getState().selectedNamespace;
+      MyMetadataApi
+        .getMetadata({
+          namespace,
+          entityId,
+          entityType
+        })
+        .subscribe(
+          () => {
+            this.setState({
+              entity: searchState.overviewEntity,
+              errorContent: null,
+              showOverview: true,
+              tag: this.typeToComponentMap[objectQuery(searchState.overviewEntity, 'type')]
+            }, this.scrollEntityToView.bind(this));
+          },
+          (err) => {
+            if (err.statusCode === 404) {
+              this.setState({
+                errorContent: (
+                  <div className="overview-error-container">
+                    <h4>
+                      <strong>
+                        {T.translate('features.Overview.errorMessage404', {entityId, entityType: entityTypeLabel})}
+                      </strong>
+                    </h4>
+                    <span>{T.translate('features.Overview.errorMessageSubtitle')}</span>
+                  </div>
+                ),
+                showOverview: true
+              });
+            }
+            if (err.statusCode === 403) {
+              this.setState({
+                errorContent: (
+                  <div className="overview-error-container">
+                    <h4>
+                      <strong>
+                        {T.translate('features.Overview.errorMessageAuthorization', {entityId, entityType: entityTypeLabel})}
+                      </strong>
+                    </h4>
+                    <span>{T.translate('features.Overview.errorMessageSubtitle')}</span>
+                  </div>
+                ),
+                showOverview: true
+              });
+            }
           }
-          this.setState({
-            entity,
-            showOverview: true,
-            tag: this.typeToComponentMap[objectQuery(overviewEntity, 'type')]
-          }, this.scrollEntityToView.bind(this));
-        }
-      }
+        );
     });
   }
   scrollEntityToView() {
@@ -115,14 +158,17 @@ export default class Overview extends Component {
       <div className={classnames("overview-container", {"show-overview": this.state.showOverview })}>
         <div className="overview-wrapper" >
           {
-            React.createElement(
-              Tag,
-              {
-                entity: this.state.entity,
-                onClose: this.hideOverview.bind(this),
-                onCloseAndRefresh: this.closeAndRefresh.bind(this)
-              }
-            )
+            this.state.errorContent ?
+              this.state.errorContent
+            :
+              React.createElement(
+                Tag,
+                {
+                  entity: this.state.entity,
+                  onClose: this.hideOverview.bind(this),
+                  onCloseAndRefresh: this.closeAndRefresh.bind(this)
+                }
+              )
           }
         </div>
       </div>

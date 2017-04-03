@@ -579,6 +579,9 @@ features:
     deployedLabel:
       data: Created
       app: Deployed
+    errorMessage404: Sorry, we are not able to find {entityType} "{entityId}"
+    errorMessageAuthorization: You are not authorized to view {entityType} "{entityId}"
+    errorMessageSubtitle: Please select another entity
   Pagination:
     dropdown-label: Page
   PropertiesEditor:
